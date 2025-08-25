@@ -1,0 +1,52 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>com.cmcc.littlec.autoshowdoc</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>AutoShowDoc</name>
+    <version>1.0.0</version>
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="316317579@qq.com" url="https://www.nocompany.com">no company</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description><![CDATA[
+    English:
+    AutoShowDoc is a plugin that automatically generates API documentation from your Java controller methods and exports them to RunApi platforms.
+    中文:
+    在spring-web框架下实现：
+    1. 通过RestFul接口风格信息自动生成完整/简化的RunApi可调用文档
+    1.1 当函数参数为对象，且包含多层嵌套时，会提示用户选择简化、完整的文档，以便生成用户希望的文档格式
+  ]]></description>
+    <change-notes><![CDATA[
+      v1.0.0: 完成插件基本从接口代码信息生成RunApi可调用文档的能力
+    ]]>
+    </change-notes>
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+    <!-- 添加对Java功能的依赖 -->
+    <depends>com.intellij.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="com.cmcc.littlec.autoshowdoc.config.AppSettings"/>
+        <applicationConfigurable instance="com.cmcc.littlec.autoshowdoc.config.SettingsConfigurable"
+                                 id="com.cmcc.littlec.settings"
+                                 displayName="AutoShowDoc Settings"/>
+    </extensions>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <actions>
+        <action id="GenerateShowDoc"
+                class="com.cmcc.littlec.autoshowdoc.action.GenerateDocAction"
+                text="Generate Show Doc"
+                description="Generate ShowDoc documentation">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+<!--            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt D"/>-->
+        </action>
+    </actions>
+</idea-plugin>
