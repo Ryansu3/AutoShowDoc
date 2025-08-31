@@ -26,27 +26,7 @@
 </#if>
 <@renderParam param />
 </#list>
-* @json_param
-<#if api.params?has_content>
-<#function calculateIndent level>
-<#assign resultIndent = "">
-<#if level gt 0>
-    <#list 1..level as i>
-        <#assign resultIndent = resultIndent + "    ">
-    </#list>
-</#if>
-<#return resultIndent>
-</#function>
-<#macro renderJsonParam param level=1>
-<#assign lf = "
-">
-<#assign nextIndent = calculateIndent(level)><#assign preIndent = calculateIndent(level - 1)>
-<#if param.isCollection()><#if param.children?has_content>[{${lf}${nextIndent}<#list param.children as child>"${child.name}": <#if child.isObject?? && child.isObject()><@renderJsonParam child level + 1/><#elseif child.type == "int" || child.type == "Integer" || child.type == "long" || child.type == "Long" || child.type == "short" || child.type == "Short" || child.type == "byte" || child.type == "Byte" || child.type == "float" || child.type == "Float" || child.type == "double" || child.type == "Double">0<#else>""</#if><#assign nextIndent = calculateIndent(level)><#assign preIndent = calculateIndent(level - 1)><#if child_has_next>,${lf}${nextIndent}</#if></#list>${lf}${preIndent}}]<#else>[]</#if><#elseif param.isObject()><#if param.children?has_content>{${lf}${nextIndent}<#list param.children as child>"${child.name}": <#if child.isObject?? && child.isObject()><@renderJsonParam child level + 1/><#elseif child.type == "int" || child.type == "Integer" || child.type == "long" || child.type == "Long" || child.type == "short" || child.type == "Short" || child.type == "byte" || child.type == "Byte" || child.type == "float" || child.type == "Float" || child.type == "double" || child.type == "Double">0<#else>""</#if><#assign nextIndent = calculateIndent(level)><#assign preIndent = calculateIndent(level - 1)><#if child_has_next>,${lf}${nextIndent}</#if></#list>${lf}${preIndent}}<#else>{}</#if><#else><#if param.type == "int" || param.type == "Integer" || param.type == "long" || param.type == "Long" || param.type == "short" || param.type == "Short" || param.type == "byte" || param.type == "Byte" || param.type == "float" || param.type == "Float" || param.type == "double" || param.type == "Double">0<#else>""</#if></#if></#macro>
-<#list api.params as param>
-<#if param.isObject?? && param.isObject()>
-    <@renderJsonParam param/></#if></#list></#if>
-
-</#if>
+* @json_param <#if api.params?has_content><#macro renderJsonParam param level=1><#if param.isCollection()><#if param.children?has_content>[{<#list param.children as child>"${child.name}": <#if child.isObject?? && child.isObject()><@renderJsonParam child level + 1/><#elseif child.type == "int" || child.type == "Integer" || child.type == "long" || child.type == "Long" || child.type == "short" || child.type == "Short" || child.type == "byte" || child.type == "Byte" || child.type == "float" || child.type == "Float" || child.type == "double" || child.type == "Double">0<#else>""</#if><#if child_has_next>,</#if></#list>}]<#else>[]</#if><#elseif param.isObject()><#if param.children?has_content>{<#list param.children as child>"${child.name}": <#if child.isObject?? && child.isObject()><@renderJsonParam child level + 1/><#elseif child.type == "int" || child.type == "Integer" || child.type == "long" || child.type == "Long" || child.type == "short" || child.type == "Short" || child.type == "byte" || child.type == "Byte" || child.type == "float" || child.type == "Float" || child.type == "double" || child.type == "Double">0<#else>""</#if><#if child_has_next>,</#if></#list>}<#else>{}</#if><#else><#if param.type == "int" || param.type == "Integer" || param.type == "long" || param.type == "Long" || param.type == "short" || param.type == "Short" || param.type == "byte" || param.type == "Byte" || param.type == "float" || param.type == "Float" || param.type == "double" || param.type == "Double">0<#else>""</#if></#if></#macro><#list api.params as param><#if param.isObject?? && param.isObject()><@renderJsonParam param/></#if></#list></#if></#if>
 * @return {}
 * @remark 无
 * @number 99
