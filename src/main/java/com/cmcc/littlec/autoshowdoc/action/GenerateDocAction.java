@@ -11,11 +11,13 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 
+import javax.swing.event.HyperlinkEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +66,7 @@ public class GenerateDocAction extends AnAction {
             PsiMethod[] allMethods = psiClass.getAllMethods();
             // 用于收集操作结果
             List<UploadResult> results = new ArrayList<>();
+            generator.resetBatchOperationState();
             for (PsiMethod method : allMethods) {
                 // 只处理public方法，并且确保是用户自己定义的方法（而不是继承的方法）
                 if (method.hasModifierProperty("public") && isUserDefinedMethod(psiClass, method)) {
@@ -71,7 +74,8 @@ public class GenerateDocAction extends AnAction {
                     results.add(result);
                 }
             }
-            
+            // 显示汇总结果
+            showSummaryResults(project, results);
         }
     }
 
@@ -136,20 +140,48 @@ public class GenerateDocAction extends AnAction {
         int totalMethods = results.size();
         int runApiSuccessCount = 0;
 
-        StringBuilder details = new StringBuilder();
-        details.append("总共处理了 ").append(totalMethods).append(" 个方法:\n\n");
+        // 构建详细结果信息（用于查看详情）
+        StringBuilder detailedResults = new StringBuilder();
 
         for (UploadResult result : results) {
             if (result.isRunApiSuccess()) {
                 runApiSuccessCount++;
+                detailedResults.append("方法名: ").append(result.getMethodName()).append(" - 成功\n");
+            } else {
+                detailedResults.append("方法名: ").append(result.getMethodName()).append(" - 失败\n");
             }
-
-            details.append("方法: ").append(result.getMethodName()).append("\n");
-            details.append("  RunAPI: ").append(result.isRunApiSuccess() ? "成功" : "失败").append("\n\n");
         }
 
-        details.append("RunAPI 成功: ").append(runApiSuccessCount).append("/").append(totalMethods);
+        // 构建主通知内容
+        StringBuilder mainContent = new StringBuilder();
+        mainContent.append("<html>");
+        mainContent.append("总共处理了 ").append(totalMethods).append(" 个方法<br>");
+        mainContent.append("RunAPI可调用接口生成，成功: ").append(runApiSuccessCount).append("/").append(totalMethods);
+        mainContent.append("<br><a href='show_details'>查看详情</a>");
+        mainContent.append("</html>");
 
-        showNotification(project, "上传结果", details.toString(), NotificationType.INFORMATION);
+        // 显示通知
+        Notification notification = new Notification(
+                "AutoShowDoc",
+                "上传结果",
+                mainContent.toString(),
+                NotificationType.INFORMATION
+        );
+
+        String finalDetailedResults = detailedResults.toString();
+        notification.setListener((notification1, hyperlinkEvent) -> {
+            if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                if ("show_details".equals(hyperlinkEvent.getDescription())) {
+                    Messages.showMessageDialog(
+                            project,
+                            finalDetailedResults,
+                            "详细结果",
+                            Messages.getInformationIcon()
+                    );
+                }
+            }
+        });
+
+        Notifications.Bus.notify(notification, project);
     }
 }

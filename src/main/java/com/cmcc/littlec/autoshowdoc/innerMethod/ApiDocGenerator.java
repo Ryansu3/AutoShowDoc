@@ -3,12 +3,12 @@ package com.cmcc.littlec.autoshowdoc.innerMethod;
 import com.cmcc.littlec.autoshowdoc.config.AppSettings;
 import com.cmcc.littlec.autoshowdoc.entity.ApiModel;
 import com.cmcc.littlec.autoshowdoc.entity.ApiParam;
+import com.cmcc.littlec.autoshowdoc.entity.ComplexTypeChoiceDialog;
 import com.cmcc.littlec.autoshowdoc.entity.RunApiContentComplexType;
 import com.cmcc.littlec.autoshowdoc.entity.UploadResult;
 import com.cmcc.littlec.autoshowdoc.util.JavaDocUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.JavaDocTokenType;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationMemberValue;
@@ -49,6 +49,9 @@ public class ApiDocGenerator {
     private final RunApiService runApiService;
     private final Configuration freemarkerConfig;
     private Integer depth = 0;
+    // 用于存储批量操作时的选择
+    private RunApiContentComplexType batchChoice = null;
+    private boolean applyToAll = false;
     private static final Set<String> JSON_OBJECT_TYPES = Set.of(
             "com.alibaba.fastjson.JSONObject",
             "com.alibaba.fastjson2.JSONObject",
@@ -80,7 +83,7 @@ public class ApiDocGenerator {
 //        String showDocContent = generateShowDocContent(apiModel);
 
         // 3.1 根据apiModel的参数深度，如果深度大于1,则弹出选项，让用户选择是生成完整的参数文档，还是生成精简的（即只有1层参数深度的文档）
-        RunApiContentComplexType type = generateRunApiContentComplexType(apiModel.getParamDepth());
+        RunApiContentComplexType type = generateRunApiContentComplexType(apiModel);
         String runApiContent;
         if(RunApiContentComplexType.COMPLETE.getType().equals(type.getType())){
             // 3.2(1) 生成完整的RunAPI调试内容
@@ -169,6 +172,15 @@ public class ApiDocGenerator {
             LOG.error("RunApi文档上传失败", e);
             return false;
         }
+    }
+
+    /**
+     * 重置批量操作状态
+     * 在批量处理开始前调用此方法
+     */
+    public void resetBatchOperationState() {
+        this.batchChoice = null;
+        this.applyToAll = false;
     }
 
     /**
@@ -715,25 +727,42 @@ public class ApiDocGenerator {
      * @Date 2025/8/23
      * [paramDepth] com.cmcc.littlec.autoshowdoc.entity.RunApiContentComplexType
      */
-    private RunApiContentComplexType generateRunApiContentComplexType(Integer paramDepth) {
-        if(paramDepth<=1){
+    private RunApiContentComplexType generateRunApiContentComplexType(ApiModel apiModel) {
+        // 如果是批量操作且用户选择了应用到所有方法
+        if (batchChoice != null && applyToAll) {
+            return batchChoice;
+        }
+
+        if(apiModel.getParamDepth()<=1){
             return RunApiContentComplexType.SIMPLE;
         }
-        int result = Messages.showDialog(
-                "参数对象结构复杂，是否生成简化的对象参数文档？\n" +
-                        "选择\"是\"将生成简化参数文档，选择\"否\"将生成完整参数文档。",
-                "简化参数结构文档生成确认",
-                new String[]{"是", "否"},
-                0,
-                Messages.getQuestionIcon()
-        );
-        // 根据用户选择返回对应的枚举类型
-        if (result == 1) {
-            // 点击了"生成完整版"
-            return RunApiContentComplexType.COMPLETE;
-        } else {
-            // 点击了"生成简化版"或其他情况
-            return RunApiContentComplexType.SIMPLE;
+
+        // 创建并显示自定义对话框
+        ComplexTypeChoiceDialog dialog = new ComplexTypeChoiceDialog(apiModel.getTitle());
+        dialog.show();
+        if (dialog.isYes()) {
+            // 用户选择了"是"
+            RunApiContentComplexType choice = RunApiContentComplexType.SIMPLE;
+
+            // 检查用户是否勾选了"对当前次批量生成保持该操作"
+            if (dialog.isApplyToAll()) {
+                this.applyToAll = true;
+                this.batchChoice = choice;
+            }
+            return choice;
+        } else if (dialog.isNo()) {
+            // 用户选择了"否"
+            RunApiContentComplexType choice = RunApiContentComplexType.COMPLETE;
+
+            // 检查用户是否勾选了"对当前次批量生成保持该操作"
+            if (dialog.isApplyToAll()) {
+                this.applyToAll = true;
+                this.batchChoice = choice;
+            }
+            return choice;
         }
+
+        // 用户取消操作，默认返回简化版
+        return RunApiContentComplexType.SIMPLE;
     }
 }
