@@ -31,19 +31,8 @@ public class RunApiService {
      * @Date 2025/8/19
      * [content, project] void
      */
-    public void uploadDocument(String content, Project project) {
+    public boolean uploadDocument(String methodTitle, String content, Project project) {
         AppSettings settings = AppSettings.getInstance(project);
-
-        if (settings.getApiKey().isEmpty() || settings.getToken().isEmpty()) {
-            showNotification(project, "ShowDoc配置不完整",
-                    "请先配置API Key和Token", NotificationType.WARNING);
-            return;
-        }
-        if (settings.getServerHost().isEmpty()) {
-            showNotification(project, "ShowDoc配置不完整",
-                    "请先配置ShowDoc服务器地址", NotificationType.WARNING);
-            return;
-        }
         try {
             // 构建表单请求体
             RequestBody formBody = new FormBody.Builder()
@@ -66,16 +55,17 @@ public class RunApiService {
             // 发送请求
             try (Response response = client.newCall(request).execute()) {
                 if (response.isSuccessful()) {
-                    showNotification(project, "文档上传成功",
-                            "API文档已成功上传到RunApi", NotificationType.INFORMATION);
+                    return true;
                 } else {
-                    showNotification(project, "文档上传失败",
+                    showNotification(project, methodTitle + "文档上传失败",
                             "上传失败，状态码: " + response.code(), NotificationType.ERROR);
+                    return false;
                 }
             }
         } catch (IOException e) {
-            showNotification(project, "文档上传异常",
+            showNotification(project, methodTitle + "文档上传异常",
                     "上传过程中发生异常: " + e.getMessage(), NotificationType.ERROR);
+            return false;
         }
     }
 

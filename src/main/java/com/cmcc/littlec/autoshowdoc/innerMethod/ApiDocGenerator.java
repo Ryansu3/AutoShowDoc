@@ -4,6 +4,7 @@ import com.cmcc.littlec.autoshowdoc.config.AppSettings;
 import com.cmcc.littlec.autoshowdoc.entity.ApiModel;
 import com.cmcc.littlec.autoshowdoc.entity.ApiParam;
 import com.cmcc.littlec.autoshowdoc.entity.RunApiContentComplexType;
+import com.cmcc.littlec.autoshowdoc.entity.UploadResult;
 import com.cmcc.littlec.autoshowdoc.util.JavaDocUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -28,6 +29,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.Version;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -69,7 +71,8 @@ public class ApiDocGenerator {
      * @Date 2025/8/19
      * [method] void
      */
-    public void generateDocs(PsiMethod method) {
+    public UploadResult generateDocs(PsiMethod method) {
+        UploadResult result = new UploadResult(method.getName());
         // 1. 解析方法信息
         ApiModel apiModel = parseMethod(method);
 
@@ -91,7 +94,9 @@ public class ApiDocGenerator {
 //        uploadToShowDoc(apiModel.getDictionary(), apiModel.getTitle(), showDocContent);
 
         // 5. 保存RunAPI配置文件
-        uploadRunApiContent(runApiContent);
+        boolean runApiSuccess = uploadRunApiContent(apiModel.getTitle(), runApiContent);
+        result.setRunApiSuccess(runApiSuccess);
+        return result;
     }
 
     /**
@@ -151,12 +156,18 @@ public class ApiDocGenerator {
      * @Date 2025/8/19
      * [dictionary, title, markdownContent] void
      */
-    public void uploadRunApiContent(String runApiContent) {
+    public boolean uploadRunApiContent(String methodTitle, String runApiContent) {
         try {
-            runApiService.uploadDocument(runApiContent, project);
-            LOG.info("RunApi文档上传成功");
+            boolean success = runApiService.uploadDocument(methodTitle, runApiContent, project);
+            if (success) {
+                LOG.info("RunApi文档上传成功");
+            } else {
+                LOG.error("RunApi文档上传失败");
+            }
+            return success;
         } catch (Exception e) {
             LOG.error("RunApi文档上传失败", e);
+            return false;
         }
     }
 
@@ -494,7 +505,9 @@ public class ApiDocGenerator {
                     }
                     // 递归解析子对象的字段
                     List<ApiParam> childFields = parseObjectFields(field.getType(), fieldParam, level + 1);
-                    fieldParam.getChildren().addAll(childFields);
+                    if(!CollectionUtils.isEmpty(childFields)){
+                        fieldParam.getChildren().addAll(childFields);
+                    }
                 }
 
                 fields.add(fieldParam);
@@ -633,29 +646,6 @@ public class ApiDocGenerator {
         if (nonObjectTypes.contains(canonicalText)) {
             return false;
         }
-
-//        // 检查是否为数组类型
-//        if (psiType instanceof PsiArrayType) {
-//            return false;
-//        }
-//
-//        // 检查是否为集合类型
-//        if (psiType instanceof PsiClassType) {
-//            PsiClassType classType = (PsiClassType) psiType;
-//            PsiClass psiClass = classType.resolve();
-//            if (psiClass != null) {
-//                String qualifiedName = psiClass.getQualifiedName();
-//                if (qualifiedName != null) {
-//                    // 常见的集合类型
-//                    if (qualifiedName.startsWith("java.util.Collection") ||
-//                            qualifiedName.startsWith("java.util.List") ||
-//                            qualifiedName.startsWith("java.util.Set") ||
-//                            qualifiedName.startsWith("java.util.Map")) {
-//                        return false;
-//                    }
-//                }
-//            }
-//        }
 
         // 对于其他类型，如果能解析到PsiClass且不是枚举，则认为是对象类型
         PsiClass psiClass = PsiTypesUtil.getPsiClass(psiType);
