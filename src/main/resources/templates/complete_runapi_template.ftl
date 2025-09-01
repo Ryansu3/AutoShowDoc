@@ -5,7 +5,6 @@
 * @description <#if api.description?has_content>${api.description}<#else>无</#if>
 * @method ${api.requestType}
 * @url ${api.contextPath}${api.path}
-* @header
 <#if api.requestType == "GET">
 <#list api.params as param>* @param ${param.name} ${param.required?string("必选", "可选")} ${param.type} <#if param.description?has_content>${param.description}<#else>无</#if>
 </#list>
