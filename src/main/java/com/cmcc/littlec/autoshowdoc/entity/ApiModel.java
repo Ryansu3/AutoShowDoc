@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
  * @create: 2025-08-13 15:23
  */
 public class ApiModel {
-    private String title;
-    private String controllerTitle;
-    private String dictionary;
-    private String description;
-    private String methodName;
-    private String path;
-    private String contextPath;
+    private String title="";
+    private String controllerTitle="";
+    private String dictionary="";
+    private String description="";
+    private String methodName="";
+    private String path="";
+    private String contextPath="";
     // 默认请求类型为GET
     private String requestType = "GET";
     private List<ApiParam> params = new ArrayList<>();

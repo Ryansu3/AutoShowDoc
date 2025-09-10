@@ -235,7 +235,9 @@ public class ApiDocGenerator {
         // 先处理类级别的路径注解
         for (PsiAnnotation annotation : classAnnotations) {
             String qualifiedName = annotation.getQualifiedName();
-            if ("org.springframework.web.bind.annotation.RequestMapping".equals(qualifiedName)) {
+            if ("RequestMapping".equals(qualifiedName) ||
+                    "org.springframework.web.bind.annotation.RequestMapping".equals(qualifiedName) ||
+                    qualifiedName.endsWith(".RequestMapping")) {
                 String basePath = getAnnotationValue(annotation, "value", "path");
                 // 保存基础路径，后续与方法路径组合
                 model.setPath(basePath);
