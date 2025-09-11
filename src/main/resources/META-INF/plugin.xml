@@ -35,7 +35,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="com.cmcc.littlec.autoshowdoc.config.AppSettings"/>
-        <applicationConfigurable instance="com.cmcc.littlec.autoshowdoc.config.SettingsConfigurable"
+        <projectConfigurable instance="com.cmcc.littlec.autoshowdoc.config.SettingsConfigurable"
                                  id="com.cmcc.littlec.settings"
                                  displayName="AutoShowDoc Settings"/>
     </extensions>

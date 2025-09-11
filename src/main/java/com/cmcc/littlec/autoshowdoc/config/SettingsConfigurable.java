@@ -20,6 +20,11 @@ public class SettingsConfigurable implements Configurable {
     private SettingsPanel settingsPanel;
     private Project project;
 
+    // 添加构造函数，通过 IDEA 的扩展机制自动注入项目
+    public SettingsConfigurable(Project project) {
+        this.project = project;
+    }
+
     // 设置窗口中显示的标题
     @Nls(capitalization = Nls.Capitalization.Title)
     @Override
@@ -30,12 +35,8 @@ public class SettingsConfigurable implements Configurable {
     // 创建配置面板
     @Override
     public JComponent createComponent() {
-        // 在创建组件时获取当前活动项目
-        project = getActiveProject();
-        if (project != null) {
-            settingsPanel = new SettingsPanel(project);
-        }
-        return settingsPanel != null ? settingsPanel.getPanel() : null;
+        settingsPanel = new SettingsPanel(project);
+        return settingsPanel.getPanel();
     }
 
     // 检查用户是否修改了设置（用于启用Apply按钮）
