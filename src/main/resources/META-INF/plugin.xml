@@ -6,7 +6,7 @@
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>AutoShowDoc</name>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="316317579@qq.com" url="https://www.nocompany.com">no company</vendor>
 
@@ -14,19 +14,23 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    English:
-    AutoShowDoc is a plugin that automatically generates API documentation from your Java controller methods and exports them to RunApi platforms.
-    中文:
-    在spring-web框架下实现：
-    1. 通过RestFul接口风格信息自动生成完整/简化的RunApi可调用文档
-    1.1 当函数参数为对象，且包含多层嵌套时，会提示用户选择简化、完整的文档，以便生成用户希望的文档格式
-    1.2 支持批量生成类内方法的文档，根据批量生成结果返回提示和失败详情
-  ]]></description>
+<b>English:</b><br/>
+AutoShowDoc is a plugin that automatically generates API documentation from your Java controller methods and exports them to RunApi platforms.<br/><br/>
+
+<b>中文:</b><br/>
+在spring-web框架下实现：<br/>
+&nbsp;&nbsp;1. 通过RestFul接口风格信息自动生成完整/简化的RunApi可调用文档<br/>
+&nbsp;&nbsp;1.1 当函数参数为对象，且包含多层嵌套时，会提示用户选择简化、完整的文档，以便生成用户希望的文档格式<br/>
+&nbsp;&nbsp;1.2 支持批量生成类内方法的文档，根据批量生成结果返回提示和失败详情
+]]></description>
+
     <change-notes><![CDATA[
-      v1.0.0: 完成插件基本从接口代码信息生成RunApi可调用文档的能力
-      v1.0.1: 完成批量生成runapi可调用接口功能
-    ]]>
-    </change-notes>
+v1.0.0: 完成插件基本从接口代码信息生成RunApi可调用文档的能力<br/>
+v1.0.1: 完成批量生成runapi可调用接口功能<br/>
+v1.0.2:<br/>
+&nbsp;&nbsp;1. 修复setting配置修改后，无法立即生效的问题<br/>
+&nbsp;&nbsp;2. 兼容没有设置relativePath和contextPath的情况
+]]></change-notes>
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
