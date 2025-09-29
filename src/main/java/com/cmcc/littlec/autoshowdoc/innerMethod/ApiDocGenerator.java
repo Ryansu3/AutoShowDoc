@@ -424,14 +424,22 @@ public class ApiDocGenerator {
 
         // 如果是POST方法且参数有@RequestBody注解，则递归解析对象字段
         if ("POST".equals(requestType) && isRequestBody) {
-            param.setObject(true);
-            // 如果是集合或数组，设置当前
-            PsiType elementType = getCollectionElementType(parameter.getType());
-            if (elementType != null) {
-                param.setCollection(true);
+            // 检查是否为JSONObject类型
+            PsiClass parameterClass = PsiTypesUtil.getPsiClass(parameter.getType());
+            if (parameterClass != null && JSON_OBJECT_TYPES.contains(parameterClass.getQualifiedName())) {
+                // 对于JSONObject类型，设置为对象但不解析具体字段
+                param.setObject(true);
+                // 不设置children，因为无法解析JSONObject的具体字段
+            } else {
+                param.setObject(true);
+                // 如果是集合或数组，设置当前
+                PsiType elementType = getCollectionElementType(parameter.getType());
+                if (elementType != null) {
+                    param.setCollection(true);
+                }
+                List<ApiParam> children = parseObjectFields(parameter.getType(), param, 0);
+                param.setChildren(children);
             }
-            List<ApiParam> children = parseObjectFields(parameter.getType(), param, 0);
-            param.setChildren(children);
         }
 
         params.add(param);
